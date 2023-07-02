@@ -37,3 +37,8 @@ class TagAndItemSchema(ItemSchema):
     tag = fields.Nested(TagSchema())
     item = fields.Nested(ItemSchema())
 
+class UserSchema(Schema):
+    id = fields.Int(dump_only=True)
+    username = fields.Str(required=True, validate=validate.Length(min=1))
+    password = fields.Str(required=True, validate=validate.Length(min=1), load_only=True) #makes sure password is never sent to client
+
