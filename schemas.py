@@ -1,29 +1,39 @@
 from marshmallow import Schema, fields, validate, post_load
 
-class ItemSchema(Schema):
-    id = fields.Str(dump_only=True)
+class PlainItemSchema(Schema): # This is a plain schema, it does not have any nested fields. This avoids recursion.
+    id = fields.Int(dump_only=True)
     name = fields.Str(required=True, validate=validate.Length(min=1))
     price = fields.Float(required=True, validate=validate.Range(min=0))
-    store_id = fields.Str(required=True)
 
-    @post_load
-    def make_item(self, data, **kwargs):
-        return Item(**data)
+class PlainStoreSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True, validate=validate.Length(min=1))
 
 class ItemUpdateSchema(Schema):
     name = fields.Str(validate=validate.Length(min=1))
     price = fields.Float(validate=validate.Range(min=0))
-    store_id = fields.Str()
+    store_id = fields.Int()
 
-    @post_load
-    def make_item(self, data, **kwargs):
-        return Item(**data)
+class ItemSchema(PlainItemSchema):
+    store_id = fields.Int(required=True, load_only=True)
+    store = fields.Nested(PlainStoreSchema(), dump_only=True)
+    tags = fields.List(fields.Nested("TagSchema"), dump_only=True)
 
-
-class StoreSchema(Schema):
-    id = fields.Str(dump_only=True)
+class PlainTagSchema(Schema):
+    id = fields.Int(dump_only=True)
     name = fields.Str(required=True, validate=validate.Length(min=1))
 
-    @post_load
-    def make_store(self, data, **kwargs):
-        return Store(**data)
+class StoreSchema(PlainStoreSchema):
+    items = fields.List(fields.Nested(PlainItemSchema()), dump_only=True)
+    tags = fields.List(fields.Nested(PlainTagSchema()), dump_only=True)
+
+class TagSchema(PlainTagSchema):
+    store_id = fields.Int(required=True, load_only=True)
+    store = fields.Nested(PlainStoreSchema(), dump_only=True)
+    items = fields.List(fields.Nested(PlainItemSchema()), dump_only=True)
+
+class TagAndItemSchema(ItemSchema):
+    message = fields.Str()
+    tag = fields.Nested(TagSchema())
+    item = fields.Nested(ItemSchema())
+
