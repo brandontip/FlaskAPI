@@ -10,6 +10,7 @@ from Resources.tag import blp as TagBlueprint
 from Resources.user import blp as UserBlueprint
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+from dotenv import load_dotenv
 
 def create_app(db_url=None):
     app = Flask(__name__)
@@ -20,6 +21,7 @@ def create_app(db_url=None):
     app.config["OPENAPI_URL_PREFIX"] = "/"
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+    load_dotenv()
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL","sqlite:///data.db") #temp until we migrate to postgres
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["FLASK_DEBUG"] = True
